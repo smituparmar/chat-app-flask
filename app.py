@@ -27,7 +27,6 @@ def load_user(id):
 def index():
 	login_form = LoginForm()
 	user_object =User.query.all()
-	print(len(user_object))
 
 	if login_form.validate_on_submit():
 		user_object= User.query.filter_by(username=login_form.username.data).first()
@@ -104,19 +103,46 @@ def print_all():
 def create_chat(user1,user2,msg):
 	data=[]
 	if request.method=='POST':
-		user_1=User.query.filter_by(username=user1).first()
-		user_2=User.query.filter_by(username=user2).first()
-		if(not user_1 or not user_2):
-			response=jsonify({'message':'Enter valid username'})
-			response.status_code=404
+		try:
+			user_1=User.query.filter_by(username=user1).first()
+			user_2=User.query.filter_by(username=user2).first()
+			if(not user_1 or not user_2):
+				response=jsonify({'message':'Enter valid username'})
+				response.status_code=404
+				return response
+			user_1_id=str(user_1.id)
+			user_2_id=str(user_2.id)
+			message=Messages(sender_id=user_1_id,receiver_id=user_2_id,time=datetime.datetime.now(),message=msg)
+			db.session.add(message)
+			status=db.session.commit()
+			response=jsonify({'message':'message added successfully'})
 			return response
-		user_1_id=str(user_1.id)
-		user_2_id=str(user_2.id)
-		message=Messages(sender_id=user_1_id,receiver_id=user_2_id,time=datetime.datetime.now(),message=msg)
-		db.session.add(message)
-		status=db.session.commit()
-		response=jsonify({'message':'message added successfully'})
-		return response
+		except:
+			response=jsonify({'message':'server error happened'})
+			response.status_code=500
+			return response
+
+#API for adding a user
+@app.route('/add_user/<username>/<password>',methods=['POST'])
+def create_user(username,password):
+	data=[]
+	if request.method=='POST':
+		try:
+			user_object= User.query.filter_by(username=username).first()
+			if(user_object):
+				response=jsonify({'message':'username is already taken'})
+				response.status_code=409
+				return response
+			user = User(username=username,password=password)
+			db.session.add(user)
+			db.session.commit()
+			response=jsonify({'message':'user added successfully'})
+			return response
+		except:
+			response=jsonify({'message':'server error happened'})
+			response.status_code=500
+			return response
+
 
 
 #API[GET]-give chat bertween user1 and user2 in JSON
@@ -124,34 +150,35 @@ def create_chat(user1,user2,msg):
 def get_chat(user1,user2):
 	data=[]
 	if request.method=='GET':
-		user_1=User.query.filter_by(username=user1).first()
-		user_2=User.query.filter_by(username=user2).first()
-		if(not user_1 or not user_2):
-			response=jsonify(data)
-			response.status_code=404
+		try:
+			user_1=User.query.filter_by(username=user1).first()
+			user_2=User.query.filter_by(username=user2).first()
+			if(not user_1 or not user_2):
+				response=jsonify(data)
+				response.status_code=404
+				return response
+			user_1_id=str(user_1.id)
+			user_2_id=str(user_2.id)
+			messages= Messages.query.all()
+			for msg in messages:
+				if((msg.sender_id==user_1_id and msg.receiver_id==user_2_id) or 
+					(msg.sender_id==user_2_id and msg.receiver_id==user_1_id)):
+					msg_dict=dict(id=msg.id,sender=msg.sender_id,receiver=msg.receiver_id,time=msg.time,message=msg.message)
+					#print(msg_dict)
+					data.append(msg_dict)
+			response = jsonify(data)
+			response.status_code=202
 			return response
-		user_1_id=str(user_1.id)
-		user_2_id=str(user_2.id)
-		#print(type(user_1_id),user_2_id)
-		messages= Messages.query.all()
-		for msg in messages:
-			print(type(msg.sender_id),msg.receiver_id)
-			if((msg.sender_id==user_1_id and msg.receiver_id==user_2_id) or 
-				(msg.sender_id==user_2_id and msg.receiver_id==user_1_id)):
-				msg_dict=dict(id=msg.id,sender=msg.sender_id,receiver=msg.receiver_id,time=msg.time,message=msg.message)
-				#print(msg_dict)
-				data.append(msg_dict)
-		response = jsonify(data)
-		response.status_code=202
-		return response
+		except:
+			response=jsonify({'message':'server error happened'})
+			response.status_code=500
+			return response
 
 #show chat in html using API
 @app.route("/read_chat/<user1>/<user2>",methods=['GET'])
 def read_chat(user1,user2):
 	data=get_chat(user1,user2)
-	print("status code is",data.status_code)
 	if(data.status_code!=404):
-		print(data.get_json())
 		return render_template('read_chat.html',data=data.get_json(),user1=user1,user2=user2,status_code=data.status_code)
 	else:
 		return render_template('read_chat.html',data=data.get_json(),user1=user1,user2=user2,status_code=data.status_code)
