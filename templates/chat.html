@@ -1,0 +1,20 @@
+{% from 'form_helper.html' import displayField %}
+{%extends "prelogin.html" %}
+
+{%block title %}Chat{% endblock %}
+
+{%block content %}
+	<h1> chat screen is here</h1>
+	<form action="{{ url_for('chat') }}" method="POST">
+
+		{{ displayField(form.users,'whom do you want to send msg') }}
+		{{ displayField(form.message,'message',autofocus=true) }}
+
+		<div>
+			{{ form.submit_button }}
+		</div>
+
+		{{form.csrf_token}}
+	</form>
+
+{% endblock %}

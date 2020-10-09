@@ -1,0 +1,22 @@
+{% from 'form_helper.html' import displayField %}
+{%extends "prelogin.html" %}
+
+{%block title %}Chat{% endblock %}
+
+{%block content %}
+	<h1> Personal chat between {{user1}} and {{user2}}</h1>
+	{% if status_code!=404 %}
+	{% for msg in data %}
+	<li>
+	<ul>msg_id:{{msg.id}}</ul>
+	<ul>message:{{msg.message}}</ul>
+	<ul>sender:{{msg.sender}}</ul>
+	<ul>receiver:{{msg.receiver}}</ul>
+	<ul>time:{{msg['time']}}</ul>
+	</li>
+	{% endfor %} 
+	{% endif %}
+	{% if status_code ==404 %}
+	Chat does not exist
+	{% endif %}
+{% endblock %}

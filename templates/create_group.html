@@ -1,0 +1,21 @@
+{% from 'form_helper.html' import displayField %}
+{%extends "prelogin.html" %}
+
+{%block title %}Chat{% endblock %}
+
+{%block content %}
+	<h1> Create Group</h1>
+	<form action="{{ url_for('create_group') }}" method="POST">
+
+		{{ displayField(form.groupname,'Enter group name') }}
+		{{ displayField(form.message,'message',autofocus=true) }}
+		
+
+		<div>
+			{{ form.submit_button }}
+		</div>
+
+		{{form.csrf_token}}
+	</form>
+
+{% endblock %}
