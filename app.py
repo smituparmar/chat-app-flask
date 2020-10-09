@@ -22,6 +22,7 @@ login.init_app(app)
 def load_user(id):
 	return User.query.get(int(id))
 
+#index page-home page
 @app.route("/",methods=['GET','POST'])
 def index():
 	login_form = LoginForm()
@@ -36,6 +37,7 @@ def index():
 		return 'not logged in'
 	return render_template("index.html",form=login_form)
 
+#create chat from here
 @app.route('/chat',methods=['GET','POST'])
 def chat():
 	chat_form=MessageScreen()
@@ -55,6 +57,7 @@ def chat():
 		return redirect(url_for('chat'))
 	return render_template('chat.html',form=chat_form)
 
+#create group
 @app.route('/create',methods=['GET','POST'])
 def create_group():
 	create_group_form=CreateGroupScreen()
@@ -70,6 +73,7 @@ def create_group():
 
 	return render_template('create_group.html',form=create_group_form)
 
+#group_chat has minor errors
 @app.route('/group_chat',methods=['GET','POST'])
 def group_chat():
 	group_chat_form=GroupChat()
@@ -83,6 +87,7 @@ def group_chat():
 		return redirect(url_for('group_chat'))
 	return render_template('group_chat.html',form=group_chat_form)
 
+#API-returns all users id and username in JSON
 @app.route("/print",methods=['GET'])
 def print_all():
 	user_object =User.query.all()
@@ -94,6 +99,7 @@ def print_all():
 	print(response.data)
 	return response
 
+#API[GET]-give chat bertween user1 and user2 in JSON
 @app.route("/chat/<user1>/<user2>",methods=['GET'])
 def get_chat(user1,user2):
 	data=[]
@@ -119,6 +125,7 @@ def get_chat(user1,user2):
 		response.status_code=202
 		return response
 
+#show chat in html using API
 @app.route("/read_chat/<user1>/<user2>",methods=['GET'])
 def read_chat(user1,user2):
 	data=get_chat(user1,user2)
@@ -128,9 +135,8 @@ def read_chat(user1,user2):
 		return render_template('read_chat.html',data=data.get_json(),user1=user1,user2=user2,status_code=data.status_code)
 	else:
 		return render_template('read_chat.html',data=data.get_json(),user1=user1,user2=user2,status_code=data.status_code)
-
 	
-
+#dynamic table creation for group chat
 def create_dynamic_table(name):
 	try:
 		connection = psycopg2.connect(user = "qwctqeinaukphp",

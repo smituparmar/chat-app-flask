@@ -4,14 +4,6 @@ from wtforms.validators import  InputRequired, Length, EqualTo
 
 from models import User
 
-def get_all_user():
-	user_list=[]
-	user_object= User.query.all()
-	for i in user_object:
-		user_list.append(i.username)
-	print('done')
-	return user_list
-
 def invalid_credentials(form,field):
 	"""username and password checker"""
 	username_entered=form.username.data
