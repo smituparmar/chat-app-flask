@@ -99,6 +99,26 @@ def print_all():
 	print(response.data)
 	return response
 
+#API-for posting msg in database
+@app.route("/create_chat/<user1>/<user2>/<msg>",methods=['POST'])
+def create_chat(user1,user2,msg):
+	data=[]
+	if request.method=='POST':
+		user_1=User.query.filter_by(username=user1).first()
+		user_2=User.query.filter_by(username=user2).first()
+		if(not user_1 or not user_2):
+			response=jsonify({'message':'Enter valid username'})
+			response.status_code=404
+			return response
+		user_1_id=str(user_1.id)
+		user_2_id=str(user_2.id)
+		message=Messages(sender_id=user_1_id,receiver_id=user_2_id,time=datetime.datetime.now(),message=msg)
+		db.session.add(message)
+		status=db.session.commit()
+		response=jsonify({'message':'message added successfully'})
+		return response
+
+
 #API[GET]-give chat bertween user1 and user2 in JSON
 @app.route("/chat/<user1>/<user2>",methods=['GET'])
 def get_chat(user1,user2):
